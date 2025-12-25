@@ -318,7 +318,15 @@ cmd_fix_perms() {
 
 do_build() {
   ensure_cmd npm
-  (cd "$INSTALL_DIR" && npm ci && npm run build)
+  (
+    cd "$INSTALL_DIR"
+    if [ -f package-lock.json ]; then
+      npm ci
+    else
+      npm install
+    fi
+    npm run build
+  )
 }
 
 cmd_deploy() {
