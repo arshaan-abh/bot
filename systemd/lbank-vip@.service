@@ -1,0 +1,17 @@
+[Unit]
+Description=LBank VIP bot (%i)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lbank-vip
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/lbank-vip/%i.env
+ExecStart=/usr/bin/node /opt/lbank-vip/dist/index.js
+Restart=always
+RestartSec=5
+User=lbank
+Group=lbank
+
+[Install]
+WantedBy=multi-user.target
