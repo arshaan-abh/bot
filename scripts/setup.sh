@@ -308,8 +308,14 @@ cmd_fix_perms() {
     fi
   fi
 
-  if [ -d "$INSTALL_DIR/.git" ]; then
-    (cd "$INSTALL_DIR" && git config core.sharedRepository group)
+  if command -v git >/dev/null 2>&1; then
+    if git -C "$INSTALL_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      git -C "$INSTALL_DIR" config core.sharedRepository group
+    else
+      warn "Skipping git sharedRepository config; $INSTALL_DIR is not a git work tree."
+    fi
+  else
+    warn "git not found; skipping git sharedRepository config."
   fi
 
   log "Permissions updated for $INSTALL_DIR and $ENV_DIR."
