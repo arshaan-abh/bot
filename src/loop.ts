@@ -1,8 +1,7 @@
 import * as db from "./database";
 import { Telegraf } from "telegraf";
-import { kickUserFromGroup } from "./bot/helpers/kickUserFromGroup";
+import { enforceBalancePolicy } from "./bot/helpers/enforceBalancePolicy";
 import { getTeamList } from "./services/getTeamList";
-import { consts } from "./utils/consts";
 
 // Sync balances from API
 export async function syncBalances(bot: Telegraf<any>) {
@@ -29,13 +28,13 @@ export async function syncBalances(bot: Telegraf<any>) {
             await db.updateUserBalances(
               balance.openId,
               Number(balance.currencyTotalFeeAmt),
-              Number(balance.contractTotalFeeAmt),
+              Number(balance.contractTotalFeeAmt)
             );
           } catch (error) {
             console.error(
               new Date().toString(),
               `Error updating balance for UID ${balance.openId}:`,
-              error,
+              error
             );
           }
         }
@@ -57,41 +56,20 @@ export async function syncBalances(bot: Telegraf<any>) {
         // Get fresh user data with updated balances
         const updatedUser = await db.getUserByTelegramId(user.telegram_id);
 
-        if (updatedUser && db.getTotalBalance(updatedUser) < threshold) {
+        if (!updatedUser) continue;
+
+        const result = await enforceBalancePolicy(bot, updatedUser, threshold);
+        if (result === "kicked") {
           console.log(
             new Date().toString(),
-            `User ${user.telegram_id} below threshold, kicking...`,
+            `User ${user.telegram_id} removed after warning window.`
           );
-
-          // Kick user from group
-          const kicked = await kickUserFromGroup(bot, user.telegram_id);
-
-          if (kicked) {
-            await db.markUserKicked(user.telegram_id);
-
-            // Notify user
-            try {
-              const lang = consts.lang || "en";
-              await bot.telegram.sendMessage(
-                user.telegram_id,
-                lang === "fa"
-                  ? "به دلیل کمتر بودن موجودی شما از حد آستانه، از گروه حذف شده اید."
-                  : "You have been removed from the group because your balance fell below the threshold.",
-              );
-            } catch (notifyError) {
-              console.error(
-                new Date().toString(),
-                `Could not notify user ${user.telegram_id}:`,
-                notifyError,
-              );
-            }
-          }
         }
       } catch (userError) {
         console.error(
           new Date().toString(),
           `Error checking user ${user.telegram_id}:`,
-          userError,
+          userError
         );
       }
     }
@@ -113,18 +91,18 @@ export function setupBalanceSync(bot: Telegraf<any>) {
       console.error(
         new Date().toString(),
         "Error in scheduled balance sync:",
-        err,
-      ),
+        err
+      )
     );
   }, interval);
 
   // Run initial sync
   syncBalances(bot).catch((err) =>
-    console.error(new Date().toString(), "Error in initial balance sync:", err),
+    console.error(new Date().toString(), "Error in initial balance sync:", err)
   );
 
   console.log(
     new Date().toString(),
-    `Balance sync scheduled every ${interval / 60000} minutes`,
+    `Balance sync scheduled every ${interval / 60000} minutes`
   );
 }

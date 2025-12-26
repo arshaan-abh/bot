@@ -9,6 +9,8 @@ export type TUser = {
   joined: boolean;
   joined_at: string | null;
   kicked_at: string | null;
+  warn_count: number;
+  last_warned_at: string | null;
   is_admin: boolean;
   language_code: "fa" | "en";
 };
