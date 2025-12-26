@@ -1,7 +1,44 @@
 import * as db from "./database";
 import { Telegraf } from "telegraf";
 import { enforceBalancePolicy } from "./bot/helpers/enforceBalancePolicy";
+import { notifyAdmins } from "./bot/helpers/notifyAdmins";
+import { i18n } from "./locale";
 import { getTeamList } from "./services/getTeamList";
+import { consts } from "./utils/consts";
+
+const DEFAULT_NO_JOIN_WARNING_HOURS = 24;
+const BOT_STARTED_AT_MS = Date.now();
+let lastNoJoinWarningAtMs: number | null = null;
+
+function getNoJoinWarningHours(): number {
+  const raw = process.env.NO_JOIN_WARNING_HOURS;
+  const parsed = raw ? Number(raw) : DEFAULT_NO_JOIN_WARNING_HOURS;
+  if (!Number.isFinite(parsed) || parsed <= 0)
+    return DEFAULT_NO_JOIN_WARNING_HOURS;
+  return parsed;
+}
+
+async function warnIfNoJoins(bot: Telegraf<any>) {
+  const hours = getNoJoinWarningHours();
+  const windowMs = hours * 60 * 60 * 1000;
+  const lastJoinedAt = await db.getLastJoinedAt();
+  const nowMs = Date.now();
+  let lastJoinMs = BOT_STARTED_AT_MS;
+
+  if (lastJoinedAt) {
+    const parsed = Date.parse(lastJoinedAt);
+    if (Number.isFinite(parsed)) {
+      lastJoinMs = parsed;
+    }
+  }
+
+  if (nowMs - lastJoinMs < windowMs) return;
+  if (lastNoJoinWarningAtMs && nowMs - lastNoJoinWarningAtMs < windowMs) return;
+
+  const lang = consts.lang || "en";
+  await notifyAdmins(bot, i18n(lang, "noUserJoinsWarning", hours));
+  lastNoJoinWarningAtMs = nowMs;
+}
 
 // Sync balances from API
 export async function syncBalances(bot: Telegraf<any>) {
@@ -73,6 +110,8 @@ export async function syncBalances(bot: Telegraf<any>) {
         );
       }
     }
+
+    await warnIfNoJoins(bot);
 
     console.log(new Date().toString(), "Balance sync completed");
   } catch (error) {

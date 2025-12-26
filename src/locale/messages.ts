@@ -41,6 +41,22 @@ Required: {1} | Your Balance: {2}
 Please top up within 3 days to avoid removal.
   `,
 
+  botDeactivatedWarning: `
+??  Bot Deactivated  ??
+
+The bot was removed or disabled in the group.
+
+No new members will be processed until it is re-added.
+  `,
+
+  noUserJoinsWarning: `
+??  No New Joins  ??
+
+No users have joined in the last {0} hours.
+
+Please check if the bot is active and the invite flow is working.
+  `,
+
   inviteSent: `
 🎉  Access Granted Successfully!  🎉
 
@@ -277,6 +293,22 @@ export const messages_fa: Record<keyof typeof messages_en, string> = {
 ????? ???? ????: {1} | ?????? ???: {2}
 
 ????? ??? 3 ??? ????? ??? ?? ??? ?? ??? ????.
+  `,
+
+  botDeactivatedWarning: `
+??  ربات غیرفعال شد  ??
+
+ربات از گروه حذف شده یا غیرفعال شده است.
+
+تا زمانی که دوباره اضافه نشود، اعضای جدید پردازش نمی‌شوند.
+  `,
+
+  noUserJoinsWarning: `
+??  عدم عضویت جدید  ??
+
+در {0} ساعت گذشته هیچ عضوی وارد نشده است.
+
+لطفا فعال بودن ربات و روند دعوت را بررسی کنید.
   `,
 
   inviteSent: `

@@ -7,6 +7,7 @@ import { statsHandler } from "./commands/statsHandler";
 import { forceKickHandler } from "./commands/forceKickHandler";
 import { newMemberHandler } from "./commands/newMemberHandler";
 import { leftMemberHandler } from "./commands/leftMemberHandler";
+import { botStatusHandler } from "./commands/botStatusHandler";
 import { middleware } from "./middleware";
 import { helpHandler } from "./commands/helpHandler";
 import { editWelcomeHandler } from "./commands/editWelcomeHandler";
@@ -54,7 +55,7 @@ export function createBot(token: string) {
   bot.command("addadmin", async (ctx) => addAdminHandler(ctx));
   bot.command("stats", async (ctx) => statsHandler(ctx));
   bot.command("editWelcome", async (ctx) =>
-    editWelcomeCommandHandler(ctx, userState),
+    editWelcomeCommandHandler(ctx, userState)
   );
   bot.command("help", async (ctx) => helpHandler(ctx));
   bot.command("forcekick", async (ctx) => forceKickHandler(ctx, bot));
@@ -62,6 +63,7 @@ export function createBot(token: string) {
   // Handle group join events
   bot.on("new_chat_members", async (ctx) => newMemberHandler(ctx, bot));
   bot.on("left_chat_member", async (ctx) => leftMemberHandler(ctx));
+  bot.on("my_chat_member", async (ctx) => botStatusHandler(ctx, bot));
 
   bot.on("message", async (ctx) => {
     if (

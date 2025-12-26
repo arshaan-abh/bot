@@ -260,6 +260,22 @@ export async function getJoinedUsers(): Promise<TUser[]> {
   return db.all("SELECT * FROM users WHERE joined = 1");
 }
 
+export async function getLastJoinedAt(): Promise<string | null> {
+  const result = await db.get(
+    "SELECT MAX(joined_at) as last_joined_at FROM users WHERE joined_at IS NOT NULL"
+  );
+  return result?.last_joined_at || null;
+}
+
+export async function getAdminIds(): Promise<number[]> {
+  const rows = await db.all(
+    "SELECT telegram_id FROM users WHERE is_admin = 1 AND telegram_id IS NOT NULL"
+  );
+  return rows
+    .map((row: any) => Number(row.telegram_id))
+    .filter((id: number) => Number.isFinite(id));
+}
+
 // Save user
 export async function saveUser(
   user: Partial<Omit<TUser, "telegram_id">> & Pick<TUser, "telegram_id">
