@@ -435,7 +435,7 @@ export const messages_fa: Record<keyof typeof messages_en, string> = {
   `,
 
   uidDoesntExist: `
-❓  رکورد یافت نشد  ❓
+❓  رکورد پیدا نشد  ❓
 
 شناسه(UID) ارائه شده در سیستم وجود ندارد.
 
